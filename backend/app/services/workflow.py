@@ -19,10 +19,17 @@ from app.schemas import procurement as schemas
 # Import existing BuyWise orchestration engine
 import sys
 import os
-# Add project root to path so existing BuyWise package can be imported
-_PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
+import types
+# Add the repository root so the existing orchestration packages can be imported.
+_PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 if _PROJECT_ROOT not in sys.path:
     sys.path.insert(0, _PROJECT_ROOT)
+
+if "buywise" not in sys.modules:
+    buywise_package = types.ModuleType("buywise")
+    buywise_package.__path__ = [_PROJECT_ROOT]
+    buywise_package.__package__ = "buywise"
+    sys.modules["buywise"] = buywise_package
 
 from buywise.core.agent import AgentContext, Orchestrator
 from buywise.agents import (
