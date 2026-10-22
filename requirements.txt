@@ -1,0 +1,7 @@
+# BuyWise dependencies (no n8n)
+# Core multi-agent system runs on pure Python standard library.
+# No external runtime dependencies are required.
+
+# Optional: used only if you later integrate real vendor APIs / email / LLMs.
+# requests==2.31.0
+# python-dotenv==1.0.0
