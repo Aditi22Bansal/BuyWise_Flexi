@@ -3,7 +3,7 @@ from typing import List, Dict, Any
 from ..core.agent import BaseAgent, AgentContext
 from ..channels.simulated_vendor import SimulatedVendorChannel
 from ..models.data import Product, Vendor, Quote, QuoteItem, QuoteStatus
-from ..config import SETTINGS
+from ..config import SETTINGS, currency_symbol
 
 
 class ComparisonAgent(BaseAgent):
@@ -45,7 +45,8 @@ class ComparisonAgent(BaseAgent):
                 continue
             quote = channel.request_quote(vendor, req, [selected_product])
             context.quotes.append(quote)
-            self.log(context, f"  Quote from {vendor.name}: ${quote.total_amount:.2f}")
+            sym = currency_symbol(req.currency)
+        self.log(context, f"  Quote from {vendor.name}: {sym}{quote.total_amount:.2f}")
 
         # Score each vendor-quote pair across criteria
         evaluations = []
@@ -57,7 +58,7 @@ class ComparisonAgent(BaseAgent):
             self.log(
                 context,
                 f"  {vendor.name}: total_score={eval_result.total_score:.2f}, "
-                f"cost=${eval_result.total_cost:.2f}",
+                f"cost={sym}{eval_result.total_cost:.2f}",
             )
 
         self._emit(

@@ -227,7 +227,7 @@ export default function AgentActivityPage() {
                   </div>
                   <div>
                     <span className="text-muted-foreground">Budget </span>
-                    <span className="font-medium text-foreground">{formatCurrency(selectedRequest.max_budget)}</span>
+                    <span className="font-medium text-foreground">{formatCurrency(selectedRequest.max_budget, selectedRequest.currency)}</span>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Quantity </span>
@@ -262,7 +262,7 @@ export default function AgentActivityPage() {
                         Decision: {decision.decision}
                       </Badge>
                       <span className="font-medium text-foreground">{decision.recommended_vendor_name}</span>
-                      <span className="text-muted-foreground">at {formatCurrency(decision.final_total_amount)}</span>
+                      <span className="text-muted-foreground">at {formatCurrency(decision.final_total_amount, selectedRequest.currency)}</span>
                       <span className="text-muted-foreground">· score {Number(decision.total_score).toFixed(1)}</span>
                     </div>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{decision.reasoning}</p>

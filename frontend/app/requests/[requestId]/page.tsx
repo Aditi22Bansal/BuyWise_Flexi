@@ -170,7 +170,7 @@ export default function RequestDetailsPage() {
           <StatCard title="Product" value={request.product_name} />
           <StatCard title="Category" value={request.category} />
           <StatCard title="Quantity" value={String(request.quantity)} />
-          <StatCard title="Budget" value={formatCurrency(request.max_budget)} />
+          <StatCard title="Budget" value={formatCurrency(request.max_budget, request.currency)} />
         </div>
 
         <Tabs defaultValue="overview">
@@ -240,7 +240,7 @@ export default function RequestDetailsPage() {
                 <InfoRow label="Category" value={request.category} />
                 <InfoRow label="Description" value={request.description || "—"} />
                 <InfoRow label="Quantity" value={String(request.quantity)} />
-                <InfoRow label="Max Budget" value={formatCurrency(request.max_budget)} />
+                <InfoRow label="Max Budget" value={formatCurrency(request.max_budget, request.currency)} />
                 <InfoRow label="Currency" value={request.currency || "USD"} />
                 <InfoRow label="Warranty (Months)" value={String(request.warranty_months)} />
                 <InfoRow label="Required Features" value={Array.isArray(request.required_features) ? request.required_features.join(", ") : request.required_features || "—"} />

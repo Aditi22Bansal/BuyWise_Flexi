@@ -41,4 +41,17 @@ class Settings:
             self.criteria = ProcurementCriteria()
 
 
+CURRENCY_SYMBOLS = {
+    "USD": "$",
+    "INR": "₹",
+    "EUR": "€",
+    "GBP": "£",
+    "JPY": "¥",
+}
+
+
+def currency_symbol(currency: str = "USD") -> str:
+    return CURRENCY_SYMBOLS.get(currency.upper(), currency)
+
+
 SETTINGS = Settings()

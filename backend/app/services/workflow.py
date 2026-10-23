@@ -176,6 +176,9 @@ async def run_workflow(request_id: str, requirement_data: dict):
             req.completed_at = None
             db.commit()
 
+        _audit_log(db, request_id, "workflow_started",
+                   "BuyWise orchestration workflow started", actor="system")
+
         # Build requirement from API data
         requirement = ProductRequirement(
             id=request_id,
@@ -188,6 +191,7 @@ async def run_workflow(request_id: str, requirement_data: dict):
             warranty_months=requirement_data.get("warranty_months", 12),
             delivery_needed_by=requirement_data.get("delivery_needed_by"),
             preferred_vendors=requirement_data.get("preferred_vendors", []),
+            currency=requirement_data.get("currency", "USD"),
         )
 
         context = AgentContext(requirement=requirement, settings=BUYWISE_SETTINGS)
@@ -314,9 +318,13 @@ async def run_workflow(request_id: str, requirement_data: dict):
 
         # Persist all context results to database
         _persist_context(db, request_id, context)
+        _audit_log(db, request_id, "results_persisted",
+                   "Agent results persisted to database", actor="system")
 
         # Create the human approval record for the recommendation
         _create_approval_record(db, request_id, context)
+        _audit_log(db, request_id, "approval_record_created",
+                   "Pending approval record created for human review", actor="system")
 
         # The workflow is finished, but the request still needs a human decision
         if req:
@@ -599,15 +607,49 @@ def _persist_context(db: Session, request_id: str, context: AgentContext):
 
 def _audit_log(db: Session, request_id: Optional[str], event_type: str,
                description: str, actor: str = "system", metadata: Optional[dict] = None):
-    db.add(db_models.AuditLog(
-        id=str(uuid.uuid4()),
-        request_id=request_id,
-        event_type=event_type,
-        event_description=description,
-        actor=actor,
-        extra_data=json.dumps(metadata) if metadata else None,
-    ))
-    db.commit()
+    """Write an audit trail entry. Never raises — failures are swallowed so
+    the workflow can continue even if the audit table is temporarily
+    unavailable or has a stale column name."""
+    try:
+        audit = db_models.AuditLog(
+            id=str(uuid.uuid4()),
+            request_id=request_id,
+            event_type=event_type,
+            event_description=description,
+            actor=actor,
+            extra_data=json.dumps(metadata) if metadata else None,
+        )
+        db.add(audit)
+        db.commit()
+    except Exception:
+        try:
+            db.rollback()
+        except Exception:
+            pass
+        # Fallback: retry with the legacy column name (pre-0002 migrations)
+        try:
+            db.execute(
+                db.text(
+                    "INSERT INTO audit_logs (id, request_id, event_type, "
+                    "event_description, actor, metadata, created_at) "
+                    "VALUES (:id, :request_id, :event_type, :event_description, "
+                    ":actor, :metadata, now())"
+                ),
+                {
+                    "id": str(uuid.uuid4()),
+                    "request_id": request_id,
+                    "event_type": event_type,
+                    "event_description": description,
+                    "actor": actor,
+                    "metadata": json.dumps(metadata) if metadata else None,
+                },
+            )
+            db.commit()
+        except Exception:
+            try:
+                db.rollback()
+            except Exception:
+                pass
 
 
 def _build_result_payload(context: AgentContext) -> dict:

@@ -31,7 +31,7 @@ def upgrade() -> None:
         sa.Column("preferred_vendors", sa.Text(), nullable=True),
         sa.Column("status", sa.String(), nullable=True),
         sa.Column("current_stage", sa.String(), nullable=True),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=True),
+        sa.Column("created_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("completed_at", sa.DateTime(timezone=True), nullable=True),
         sa.PrimaryKeyConstraint("id"),
@@ -193,7 +193,7 @@ def upgrade() -> None:
         sa.Column("event_description", sa.Text(), nullable=False),
         sa.Column("actor", sa.String(), nullable=True),
         sa.Column("metadata", sa.Text(), nullable=True),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=True),
+        sa.Column("created_at", sa.DateTime(timezone=True), nullable=True),
         sa.ForeignKeyConstraint(["request_id"], ["procurement_requests.id"], ),
         sa.PrimaryKeyConstraint("id"),
     )

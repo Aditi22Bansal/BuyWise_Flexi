@@ -1,7 +1,7 @@
 from typing import List, Dict, Any
 from ..core.agent import BaseAgent, AgentContext
 from ..models.data import EvaluationResult, ProcurementDecision
-from ..config import SETTINGS
+from ..config import SETTINGS, currency_symbol
 
 
 class DecisionAgent(BaseAgent):
@@ -14,6 +14,7 @@ class DecisionAgent(BaseAgent):
     def execute(self, context: AgentContext) -> AgentContext:
         evaluations: List[EvaluationResult] = context.evaluations
         req = context.requirement
+        sym = currency_symbol(req.currency)
         self.log(context, f"Evaluating {len(evaluations)} vendor offers for decision")
 
         if not evaluations:
@@ -42,7 +43,7 @@ class DecisionAgent(BaseAgent):
         self.log(
             context,
             f"Best offer: {best.vendor_name} (score={best.total_score:.2f}, "
-            f"cost=${best.total_cost:.2f})",
+            f"cost={sym}{best.total_cost:.2f})",
         )
 
         threshold = SETTINGS.auto_approve_threshold

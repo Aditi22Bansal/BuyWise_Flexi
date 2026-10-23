@@ -1,7 +1,7 @@
 from typing import List, Dict, Any
 from ..core.agent import BaseAgent, AgentContext
 from ..models.data import Quote, EvaluationResult, NegotiationResult
-from ..config import SETTINGS
+from ..config import SETTINGS, currency_symbol
 
 
 class NegotiationAgent(BaseAgent):
@@ -14,6 +14,7 @@ class NegotiationAgent(BaseAgent):
 
     def execute(self, context: AgentContext) -> AgentContext:
         req = context.requirement
+        sym = currency_symbol(req.currency)
         decision = context.decision
         vendor_channel = self.vendor_channel or context.metadata.get("vendor_channel")
 
@@ -143,7 +144,7 @@ class NegotiationAgent(BaseAgent):
         if success:
             decision.reasoning += (
                 f" Negotiated {rounds} round(s): additional {final_discount*100:.1f}% "
-                f"discount, saving ${savings_achieved:.2f}."
+                f"discount, saving {sym}{savings_achieved:.2f}."
             )
         else:
             decision.reasoning += " No further concession obtained from vendor."
@@ -151,7 +152,7 @@ class NegotiationAgent(BaseAgent):
         self.log(
             context,
             f"Negotiation complete: success={success}, rounds={rounds}, "
-            f"final total=${final_total:.2f}, savings=${savings_achieved:.2f}",
+            f"final total={sym}{final_total:.2f}, savings={sym}{savings_achieved:.2f}",
         )
 
         self._emit(

@@ -31,6 +31,7 @@ class ProductRequirement:
     warranty_months: int = 12
     delivery_needed_by: Optional[str] = None
     preferred_vendors: List[str] = field(default_factory=list)
+    currency: str = "USD"
     created_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
     status: RequirementStatus = RequirementStatus.PENDING
 

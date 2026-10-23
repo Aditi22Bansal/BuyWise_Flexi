@@ -47,20 +47,24 @@ def create_procurement_request(
     )
     db.add(db_req)
 
-    # Audit log
-    db.add(db_models.AuditLog(
-        id=str(uuid.uuid4()),
-        request_id=request_id,
-        event_type="request_created",
-        event_description=f"Procurement request created for {payload.product_name}",
-        actor=current_user["username"],
-        extra_data=json.dumps({
-            "product_name": payload.product_name,
-            "category": payload.category,
-            "budget": payload.max_budget,
-            "currency": payload.currency,
-        }),
-    ))
+    # Audit log (best-effort — never blocks request creation)
+    try:
+        db.add(db_models.AuditLog(
+            id=str(uuid.uuid4()),
+            request_id=request_id,
+            event_type="request_created",
+            event_description=f"Procurement request created for {payload.product_name}",
+            actor=current_user["username"],
+            extra_data=json.dumps({
+                "product_name": payload.product_name,
+                "category": payload.category,
+                "budget": payload.max_budget,
+                "currency": payload.currency,
+            }),
+        ))
+    except Exception:
+        pass
+
     db.commit()
     db.refresh(db_req)
 
@@ -472,14 +476,19 @@ def approve_request(
 
     req.status = db_models.ProcurementStatus.COMPLETED
 
-    db.add(db_models.AuditLog(
-        id=str(uuid.uuid4()),
-        request_id=request_id,
-        event_type="approval_granted",
-        event_description=f"Request approved by {action.reviewer_name}",
-        actor=action.reviewer_name,
-        extra_data=json.dumps({"decision": "approve", "reason": action.reason}),
-    ))
+    # Audit log (best-effort)
+    try:
+        db.add(db_models.AuditLog(
+            id=str(uuid.uuid4()),
+            request_id=request_id,
+            event_type="approval_granted",
+            event_description=f"Request approved by {action.reviewer_name}",
+            actor=action.reviewer_name,
+            extra_data=json.dumps({"decision": "approve", "reason": action.reason}),
+        ))
+    except Exception:
+        pass
+
     db.commit()
     db.refresh(approval)
 
@@ -513,14 +522,19 @@ def reject_request(
 
     req.status = db_models.ProcurementStatus.REJECTED
 
-    db.add(db_models.AuditLog(
-        id=str(uuid.uuid4()),
-        request_id=request_id,
-        event_type="approval_rejected",
-        event_description=f"Request rejected by {action.reviewer_name}",
-        actor=action.reviewer_name,
-        extra_data=json.dumps({"decision": "reject", "reason": action.reason}),
-    ))
+    # Audit log (best-effort)
+    try:
+        db.add(db_models.AuditLog(
+            id=str(uuid.uuid4()),
+            request_id=request_id,
+            event_type="approval_rejected",
+            event_description=f"Request rejected by {action.reviewer_name}",
+            actor=action.reviewer_name,
+            extra_data=json.dumps({"decision": "reject", "reason": action.reason}),
+        ))
+    except Exception:
+        pass
+
     db.commit()
     db.refresh(approval)
 

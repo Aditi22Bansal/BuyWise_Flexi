@@ -1,9 +1,10 @@
+from datetime import datetime, timezone
+import json
 from sqlalchemy import (
     Column, Integer, String, Float, DateTime, Text, Boolean, ForeignKey, Enum
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.sql import func
 import enum
 
 Base = declarative_base()
@@ -49,8 +50,8 @@ class ProcurementRequest(Base):
     preferred_vendors = Column(Text, nullable=True)  # JSON array
     status = Column(Enum(ProcurementStatus), default=ProcurementStatus.PENDING)
     current_stage = Column(String, nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at = Column(DateTime(timezone=True), onupdate=datetime.utcnow)
     completed_at = Column(DateTime(timezone=True), nullable=True)
 
     # Relationships
@@ -229,9 +230,19 @@ class AuditLog(Base):
     event_description = Column(Text, nullable=False)
     actor = Column(String, nullable=True)
     extra_data = Column(Text, nullable=True)  # JSON
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 
     request = relationship("ProcurementRequest", back_populates="audit_logs")
+
+    @property
+    def metadata(self):
+        """Bridge extra_data JSON text column to the schema's metadata field."""
+        if self.extra_data:
+            try:
+                return json.loads(self.extra_data)
+            except (json.JSONDecodeError, TypeError):
+                return None
+        return None
 
 
 class EvaluationWeight(Base):
@@ -240,5 +251,5 @@ class EvaluationWeight(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     criterion = Column(String, nullable=False, unique=True)
     weight = Column(Float, nullable=False)
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=datetime.utcnow)
     updated_by = Column(String, nullable=True)

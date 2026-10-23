@@ -20,7 +20,7 @@ from buywise.agents import (
     ApprovalAgent,
 )
 from buywise.channels.simulated_vendor import SimulatedVendorChannel
-from buywise.config import SETTINGS
+from buywise.config import SETTINGS, currency_symbol
 from buywise.models.data import ProductRequirement
 
 
@@ -90,11 +90,12 @@ def main(argv=None):
         sys.exit(130)
 
     decision = context.decision
+    sym = currency_symbol(context.requirement.currency)
     print("\nPipeline complete.")
     if decision:
         print(f"Final decision: {decision.decision}")
         print(f"Recommended vendor: {decision.recommended_vendor_name}")
-        print(f"Final amount: ${decision.final_total_amount:.2f}")
+        print(f"Final amount: {sym}{decision.final_total_amount:.2f}")
 
     return 0
 

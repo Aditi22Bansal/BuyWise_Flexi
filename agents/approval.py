@@ -1,7 +1,7 @@
 from typing import List, Dict, Any
 from ..core.agent import BaseAgent, AgentContext
 from ..models.data import ProcurementDecision, NegotiationResult
-from ..config import SETTINGS
+from ..config import SETTINGS, currency_symbol
 
 
 class ApprovalAgent(BaseAgent):
@@ -66,7 +66,8 @@ class ApprovalAgent(BaseAgent):
         lines.append(f"Requirement ID: {req.id}")
         lines.append(f"Product: {req.product_name} ({req.category})")
         lines.append(f"Quantity: {req.quantity}")
-        lines.append(f"Max Budget: ${req.max_budget:.2f}")
+        sym = currency_symbol(req.currency)
+        lines.append(f"Max Budget: {sym}{req.max_budget:.2f}")
         lines.append("")
         lines.append(f"Decision: {decision.decision.upper()}")
         lines.append(f"Reasoning: {decision.reasoning}")
@@ -74,9 +75,9 @@ class ApprovalAgent(BaseAgent):
 
         if decision.recommended_vendor_name:
             lines.append(f"Recommended Vendor: {decision.recommended_vendor_name}")
-            lines.append(f"Final Total Amount: ${decision.final_total_amount:.2f}")
+            lines.append(f"Final Total Amount: {sym}{decision.final_total_amount:.2f}")
             lines.append(f"Total Score: {decision.total_score:.2f}")
-            lines.append(f"Savings vs Budget: ${req.max_budget - decision.final_total_amount:.2f}")
+            lines.append(f"Savings vs Budget: {sym}{req.max_budget - decision.final_total_amount:.2f}")
             lines.append("")
 
         if negotiations:
@@ -86,14 +87,14 @@ class ApprovalAgent(BaseAgent):
                 lines.append(f"    Rounds: {n.rounds}")
                 lines.append(f"    Success: {n.success}")
                 lines.append(f"    Final Discount: {n.final_discount_percent*100:.1f}%")
-                lines.append(f"    Final Total: ${n.final_total_amount:.2f}")
-                lines.append(f"    Savings Achieved: ${n.savings_achieved:.2f}")
+                lines.append(f"    Final Total: {sym}{n.final_total_amount:.2f}")
+                lines.append(f"    Savings Achieved: {sym}{n.savings_achieved:.2f}")
                 lines.append("")
 
         lines.append("Evaluation Summary:")
         for e in (decision.evaluation_results or []):
             lines.append(f"  {e.vendor_name}: score={e.total_score:.2f}, "
-                         f"cost=${e.total_cost:.2f}, savings=${e.savings_vs_budget:.2f}")
+                         f"cost={sym}{e.total_cost:.2f}, savings={sym}{e.savings_vs_budget:.2f}")
 
         lines.append("")
         lines.append("Requires Human Approval: "

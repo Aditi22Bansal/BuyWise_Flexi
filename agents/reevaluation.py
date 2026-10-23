@@ -1,7 +1,7 @@
 from typing import List, Dict, Any
 from ..core.agent import BaseAgent, AgentContext
 from ..models.data import EvaluationResult, NegotiationResult, ProcurementDecision
-from ..config import SETTINGS
+from ..config import SETTINGS, currency_symbol
 
 
 class ReevaluationAgent(BaseAgent):
@@ -12,6 +12,7 @@ class ReevaluationAgent(BaseAgent):
 
     def execute(self, context: AgentContext) -> AgentContext:
         req = context.requirement
+        sym = currency_symbol(req.currency)
         decision = context.decision
         negotiations: List[NegotiationResult] = context.negotiation_results
         evaluations: List[EvaluationResult] = context.evaluations
@@ -122,14 +123,14 @@ class ReevaluationAgent(BaseAgent):
                     decision.decision = "reject"
                     decision.reasoning = (
                         f"After re-evaluation, the best offer from {best.vendor_name} "
-                        f"(score={best.total_score:.2f}, cost=${best.total_cost:.2f}) still "
-                        f"exceeds the budget of ${req.max_budget:.2f}."
+                        f"(score={best.total_score:.2f}, cost={sym}{best.total_cost:.2f}) still "
+                        f"exceeds the budget of {sym}{req.max_budget:.2f}."
                     )
                 elif best.total_score >= 0.6:
                     decision.decision = "approve"
                     decision.reasoning = (
                         f"After re-evaluation, {best.vendor_name} (score={best.total_score:.2f}, "
-                        f"cost=${best.total_cost:.2f}) is recommended for approval."
+                        f"cost={sym}{best.total_cost:.2f}) is recommended for approval."
                     )
                 else:
                     decision.decision = "reject"
@@ -142,7 +143,7 @@ class ReevaluationAgent(BaseAgent):
         self.log(
             context,
             f"Re-evaluation complete: best={best.vendor_name if revised_evaluations else 'none'} "
-            f"(score={best.total_score:.2f}, cost=${best.total_cost:.2f})"
+            f"(score={best.total_score:.2f}, cost={sym}{best.total_cost:.2f})"
             if revised_evaluations else "No evaluations to re-evaluate.",
         )
 
