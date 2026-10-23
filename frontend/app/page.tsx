@@ -280,7 +280,7 @@ export default function OverviewPage() {
                         <td className="py-3 pr-4 font-mono text-xs text-foreground">{req.id}</td>
                         <td className="py-3 pr-4 text-sm text-foreground">{req.product_name}</td>
                         <td className="py-3 pr-4 text-sm text-muted-foreground">{req.category}</td>
-                        <td className="py-3 pr-4 text-sm text-right text-foreground">{formatCurrency(req.max_budget, req.currency)}</td>
+                        <td className="py-3 pr-4 text-sm text-right text-foreground">{formatCurrency(req.max_budget)}</td>
                         <td className="py-3">
                           <Badge variant={getBadgeVariant(req.status)} className="text-[10px]">
                             {req.status.charAt(0).toUpperCase() + req.status.slice(1)}
