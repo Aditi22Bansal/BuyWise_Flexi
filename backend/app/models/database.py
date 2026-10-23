@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-import json
 from sqlalchemy import (
     Column, Integer, String, Float, DateTime, Text, Boolean, ForeignKey, Enum
 )
@@ -233,16 +232,6 @@ class AuditLog(Base):
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 
     request = relationship("ProcurementRequest", back_populates="audit_logs")
-
-    @property
-    def metadata(self):
-        """Bridge extra_data JSON text column to the schema's metadata field."""
-        if self.extra_data:
-            try:
-                return json.loads(self.extra_data)
-            except (json.JSONDecodeError, TypeError):
-                return None
-        return None
 
 
 class EvaluationWeight(Base):

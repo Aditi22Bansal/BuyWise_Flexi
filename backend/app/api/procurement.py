@@ -608,4 +608,23 @@ def get_audit_logs(
     query = db.query(db_models.AuditLog)
     if request_id:
         query = query.filter_by(request_id=request_id)
-    return query.order_by(desc(db_models.AuditLog.created_at)).offset(skip).limit(limit).all()
+    logs = query.order_by(desc(db_models.AuditLog.created_at)).offset(skip).limit(limit).all()
+
+    results = []
+    for log in logs:
+        parsed_metadata = None
+        if log.extra_data:
+            try:
+                parsed_metadata = json.loads(log.extra_data)
+            except (json.JSONDecodeError, TypeError):
+                parsed_metadata = None
+        results.append({
+            "id": log.id,
+            "request_id": log.request_id,
+            "event_type": log.event_type,
+            "event_description": log.event_description,
+            "actor": log.actor,
+            "metadata": parsed_metadata,
+            "created_at": log.created_at,
+        })
+    return results
